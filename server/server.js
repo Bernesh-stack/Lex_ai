@@ -5,17 +5,14 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { connectDB } from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 import { protect } from './middleware/protect.js';
-import dns from 'dns';
-
-// Set DNS to Google to resolve MongoDB SRV records
-dns.setServers(['8.8.8.8', '1.1.1.1']);
+import { generalLimiter } from './middleware/rateLimiters.js';
 
 dotenv.config();
 
 const app = express();
 
-// Connect to Database
 connectDB();
 
 app.use(
@@ -24,16 +21,18 @@ app.use(
     credentials: true,
   })
 );
+
 app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
+app.use(generalLimiter);
 
 app.get('/', (req, res) => {
   res.send('API is running');
 });
 
-// Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 app.get('/api/test/protected', protect, (req, res) => {
   res.json({
