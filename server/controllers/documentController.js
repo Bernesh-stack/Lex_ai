@@ -1,7 +1,9 @@
 const mongoose = require('mongoose');
 const Document = require('../models/Document');
+const Clause = require('../models/Clause');
 const { getGridFSBucket } = require('../config/db');
 const { extractAndValidate } = require('../services/pdf.service');
+const { detectClauses } = require('../services/clauseDetector.service');
 
 const streamToBuffer = (stream) => {
   return new Promise((resolve, reject) => {
@@ -128,7 +130,67 @@ const getDocumentFile = async (req, res, next) => {
   }
 };
 
+const analyseDocument = async (req, res, next) => {
+  try {
+    const document = await Document.findOne({
+      _id: req.params.id,
+      userId: req.user.id,
+    }).select('+extractedText');
+
+    if (!document) {
+      return res.status(404).json({ message: 'Document not found' });
+    }
+
+    if (document.status === 'scanned') {
+      return res.status(422).json({
+        message:
+          'This document appears to be scanned. OCR support coming in a future version.',
+      });
+    }
+
+    if (!document.extractedText || !document.extractedText.trim()) {
+      return res.status(400).json({
+        message: 'Document text is not available for analysis',
+      });
+    }
+
+    document.status = 'analysing';
+    await document.save();
+
+    await Clause.deleteMany({ documentId: document._id });
+
+    const clauses = detectClauses(document.extractedText);
+
+    const clauseDocs = clauses.map((clause) => ({
+      documentId: document._id,
+      clauseTitle: clause.clauseTitle,
+      originalText: clause.originalText,
+      order: clause.order,
+      charStart: clause.charStart,
+      charEnd: clause.charEnd,
+    }));
+
+    await Clause.insertMany(clauseDocs);
+
+    document.status = 'extracting';
+    await document.save();
+
+    return res.json({
+      message: 'Clause detection completed successfully',
+      document: {
+        id: document._id,
+        status: document.status,
+        clauseCount: clauseDocs.length,
+      },
+      clauses: clauseDocs,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   uploadDocument,
   getDocumentFile,
+  analyseDocument,
 };
