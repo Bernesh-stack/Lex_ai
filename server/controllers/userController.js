@@ -1,7 +1,7 @@
-import bcrypt from 'bcryptjs';
-import User from '../models/User.js';
+const bcrypt = require('bcryptjs');
+const User = require('../models/User');
 
-export const getMe = async (req, res) => {
+const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-passwordHash');
 
@@ -15,7 +15,7 @@ export const getMe = async (req, res) => {
   }
 };
 
-export const updateMe = async (req, res) => {
+const updateMe = async (req, res) => {
   try {
     const { name, email } = req.body;
 
@@ -54,7 +54,7 @@ export const updateMe = async (req, res) => {
   }
 };
 
-export const updatePassword = async (req, res) => {
+const updatePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
 
@@ -77,7 +77,7 @@ export const updatePassword = async (req, res) => {
   }
 };
 
-export const deleteMe = async (req, res) => {
+const deleteMe = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
 
@@ -97,4 +97,11 @@ export const deleteMe = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+};
+
+module.exports = {
+  getMe,
+  updateMe,
+  updatePassword,
+  deleteMe,
 };

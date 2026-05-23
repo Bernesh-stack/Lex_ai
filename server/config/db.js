@@ -1,17 +1,27 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
+const { GridFSBucket } = require('mongodb');
+// MongoDB and creates the GridFS bucket for PDF storage
+
+let gfsBucket;
 
 const connectDB = async () => {
-    try {
-        const conn = await mongoose.connect(process.env.MONGODB_URI);
-        console.log(`MongoDB Connected: ${conn.connection.host}`);
-    } catch (error) {
-        console.error(`Error connecting to MongoDB: ${error.message}`);
-        // Check if it's a DNS/SRV issue
-        if (error.message.includes('querySrv ECONNREFUSED')) {
-            console.error('TIP: This is usually a DNS or Firewall issue. Try whitelisting your IP in MongoDB Atlas or using a non-SRV connection string.');
-        }
-        process.exit(1);
-    }
+  const conn = await mongoose.connect(process.env.MONGODB_URI);
+
+  gfsBucket = new GridFSBucket(conn.connection.db, {
+    bucketName: 'uploads',
+  });
+
+  console.log('MongoDB connected');
 };
 
-export default connectDB;
+const getGridFSBucket = () => {
+  if (!gfsBucket) {
+    throw new Error('GridFS bucket not initialized');
+  }
+  return gfsBucket;
+};
+
+module.exports = {
+  connectDB,
+  getGridFSBucket,
+};

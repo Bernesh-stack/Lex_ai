@@ -1,9 +1,9 @@
-import express from 'express';
-import { body } from 'express-validator';
-import { register, login, logout, refresh } from '../controllers/authController.js';
-import { protect } from '../middleware/protect.js';
-import { handleValidationErrors } from '../middleware/validate.js';
-import { authLimiter } from '../middleware/rateLimiters.js';
+const express = require('express');
+const { body } = require('express-validator');
+const { register, login, logout, refresh } = require('../controllers/authController');
+const { protect } = require('../middleware/protect');
+const { handleValidationErrors } = require('../middleware/validate');
+const { authLimiter } = require('../middleware/rateLimiters');
 
 const router = express.Router();
 
@@ -35,4 +35,4 @@ router.post(
 router.post('/logout', protect, logout);
 router.post('/refresh', refresh);
 
-export default router;
+module.exports = router;

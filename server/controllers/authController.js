@@ -1,7 +1,7 @@
 // Auth controller
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
 const signAccessToken = (user) => {
   return jwt.sign(
@@ -28,7 +28,7 @@ const setRefreshCookie = (res, token) => {
   });
 };
 
-export const register = async (req, res) => {
+const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
@@ -69,7 +69,7 @@ export const register = async (req, res) => {
   }
 };
 
-export const login = async (req, res) => {
+const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -103,7 +103,7 @@ export const login = async (req, res) => {
   }
 };
 
-export const logout = async (req, res) => {
+const logout = async (req, res) => {
   res.clearCookie('refreshToken', {
     httpOnly: true,
     secure: false,
@@ -113,7 +113,7 @@ export const logout = async (req, res) => {
   res.json({ message: 'Logged out successfully' });
 };
 
-export const refresh = async (req, res) => {
+const refresh = async (req, res) => {
   try {
     const token = req.cookies.refreshToken;
 
@@ -142,4 +142,11 @@ export const refresh = async (req, res) => {
   } catch (error) {
     res.status(401).json({ message: 'Invalid or expired refresh token' });
   }
+};
+
+module.exports = {
+  register,
+  login,
+  logout,
+  refresh,
 };

@@ -1,13 +1,13 @@
-import express from 'express';
-import { body } from 'express-validator';
-import {
+const express = require('express');
+const { body } = require('express-validator');
+const {
   getMe,
   updateMe,
   updatePassword,
   deleteMe,
-} from '../controllers/userController.js';
-import { protect } from '../middleware/protect.js';
-import { handleValidationErrors } from '../middleware/validate.js';
+} = require('../controllers/userController');
+const { protect } = require('../middleware/protect');
+const { handleValidationErrors } = require('../middleware/validate');
 
 const router = express.Router();
 
@@ -48,4 +48,4 @@ router.put(
 
 router.delete('/me', deleteMe);
 
-export default router;
+module.exports = router;

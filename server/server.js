@@ -1,19 +1,17 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import helmet from 'helmet';
-import cookieParser from 'cookie-parser';
-import { connectDB } from './config/db.js';
-import authRoutes from './routes/authRoutes.js';
-import userRoutes from './routes/userRoutes.js';
-import { protect } from './middleware/protect.js';
-import { generalLimiter } from './middleware/rateLimiters.js';
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 
-dotenv.config();
+const { connectDB } = require('./config/db');
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+const documentRoutes = require('./routes/documentRoutes');
+const { errorHandler } = require('./middleware/errorMiddleware');
 
 const app = express();
-
-connectDB();
 
 app.use(
   cors({
@@ -25,24 +23,27 @@ app.use(
 app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
-app.use(generalLimiter);
+app.use(morgan('dev'));
 
-app.get('/', (req, res) => {
-  res.send('API is running');
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok' });
 });
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/documents', documentRoutes);
 
-app.get('/api/test/protected', protect, (req, res) => {
-  res.json({
-    message: 'Protected route working',
-    user: req.user,
-  });
-});
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+connectDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error('MongoDB connection failed:', error.message);
+    process.exit(1);
+  });
