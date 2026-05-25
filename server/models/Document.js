@@ -11,7 +11,6 @@ const documentSchema = new mongoose.Schema(
     fileName: {
       type: String,
       required: true,
-      trim: true,
     },
     fileSize: {
       type: Number,
@@ -25,18 +24,22 @@ const documentSchema = new mongoose.Schema(
       type: String,
       enum: ['pending', 'extracting', 'scanned', 'analysing', 'ready', 'error'],
       default: 'pending',
+      index: true,
+    },
+    extractedText: {
+      type: String,
+      default: '',
     },
     pageCount: {
       type: Number,
       default: 0,
     },
-    extractedText: {
-      type: String,
-      default: '',
-      select: false,
-    },
     riskScore: {
       type: Number,
+      default: null,
+    },
+    processedAt: {
+      type: Date,
       default: null,
     },
     shareToken: {
@@ -47,14 +50,8 @@ const documentSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
-    processedAt: {
-      type: Date,
-      default: null,
-    },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-module.exports = mongoose.model('Document', documentSchema);
+module.exports = mongoose.model('Document', documentSchema);

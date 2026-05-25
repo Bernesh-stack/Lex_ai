@@ -17,40 +17,38 @@ const clauseSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-
-    // Day 5 fields can stay optional for now
     simplifiedText: {
       type: String,
-      default: '',
+      required: true,
     },
     aiRiskLevel: {
       type: String,
-      enum: ['low', 'medium', 'high', null],
-      default: null,
+      enum: ['low', 'medium', 'high'],
+      required: true,
     },
     aiRiskReason: {
       type: String,
-      default: '',
+      required: true,
     },
     keywordRiskLevel: {
       type: String,
-      enum: ['low', 'medium', 'high', null],
-      default: null,
+      enum: ['low', 'medium', 'high'],
+      required: true,
     },
     triggeredKeywords: {
       type: [String],
+      required: true,
       default: [],
     },
     finalRiskLevel: {
       type: String,
-      enum: ['low', 'medium', 'high', null],
-      default: null,
+      enum: ['low', 'medium', 'high'],
+      required: true,
     },
     finalRiskReason: {
       type: String,
-      default: '',
+      required: true,
     },
-
     order: {
       type: Number,
       required: true,

@@ -1,8 +1,8 @@
 const express = require('express');
 const { param } = require('express-validator');
 const upload = require('../utils/gridfsStorage');
-const { protect } = require('../middleware/authMiddleware');
-const { handleValidationErrors } = require('../middleware/validate');
+const { protect } = require('../middleware/protect');
+const { handleValidationErrors: validate } = require('../middleware/validate');
 const {
   uploadDocument,
   getDocumentFile,
@@ -11,21 +11,24 @@ const {
 
 const router = express.Router();
 
+// Upload document
 router.post('/upload', protect, upload.single('file'), uploadDocument);
 
+// Get document file
 router.get(
   '/:id/file',
   protect,
-  param('id').isMongoId().withMessage('Invalid document id'),
-  handleValidationErrors,
+  [param('id').isMongoId().withMessage('Valid document id is required')],
+  validate,
   getDocumentFile
 );
 
+// Analyse document
 router.post(
   '/:id/analyse',
   protect,
-  param('id').isMongoId().withMessage('Invalid document id'),
-  handleValidationErrors,
+  [param('id').isMongoId().withMessage('Valid document id is required')],
+  validate,
   analyseDocument
 );
 

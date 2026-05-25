@@ -4,6 +4,8 @@ const Clause = require('../models/Clause');
 const { getGridFSBucket } = require('../config/db');
 const { extractAndValidate } = require('../services/pdf.service');
 const { detectClauses } = require('../services/clauseDetector.service');
+const { simplifyClause } = require('../services/groq.service');
+const { computeRiskLevel } = require('../services/riskEngine.service');
 
 const streamToBuffer = (stream) => {
   return new Promise((resolve, reject) => {
@@ -130,27 +132,40 @@ const getDocumentFile = async (req, res, next) => {
   }
 };
 
+const BATCH_SIZE = 5;
+
+const riskToScore = {
+  low: 3,
+  medium: 6,
+  high: 9,
+};
+
+const calculateOverallRiskScore = (clauses = []) => {
+  if (!clauses.length) return 1;
+
+  const total = clauses.reduce((sum, clause) => {
+    return sum + (riskToScore[clause.finalRiskLevel] || 1);
+  }, 0);
+
+  return Math.min(10, Math.max(1, Math.round(total / clauses.length)));
+};
+
 const analyseDocument = async (req, res, next) => {
   try {
+    const { id } = req.params;
+
     const document = await Document.findOne({
-      _id: req.params.id,
+      _id: id,
       userId: req.user.id,
-    }).select('+extractedText');
+    });
 
     if (!document) {
-      return res.status(404).json({ message: 'Document not found' });
+      return res.status(404).json({ message: 'Document not found.' });
     }
 
-    if (document.status === 'scanned') {
+    if (!document.extractedText || document.extractedText.trim().length < 200) {
       return res.status(422).json({
-        message:
-          'This document appears to be scanned. OCR support coming in a future version.',
-      });
-    }
-
-    if (!document.extractedText || !document.extractedText.trim()) {
-      return res.status(400).json({
-        message: 'Document text is not available for analysis',
+        message: 'Document has insufficient extracted text for analysis.',
       });
     }
 
@@ -159,32 +174,73 @@ const analyseDocument = async (req, res, next) => {
 
     await Clause.deleteMany({ documentId: document._id });
 
-    const clauses = detectClauses(document.extractedText);
+    const detectedClauses = detectClauses(document.extractedText);
 
-    const clauseDocs = clauses.map((clause) => ({
-      documentId: document._id,
-      clauseTitle: clause.clauseTitle,
-      originalText: clause.originalText,
-      order: clause.order,
-      charStart: clause.charStart,
-      charEnd: clause.charEnd,
-    }));
+    if (!detectedClauses.length) {
+      document.status = 'error';
+      await document.save();
 
-    await Clause.insertMany(clauseDocs);
+      return res.status(422).json({
+        message: 'No clauses detected from extracted text.',
+      });
+    }
 
-    document.status = 'extracting';
+    const savedClauses = [];
+
+    for (let i = 0; i < detectedClauses.length; i += BATCH_SIZE) {
+      const batch = detectedClauses.slice(i, i + BATCH_SIZE);
+
+      const processedBatch = await Promise.all(
+        batch.map(async (clause) => {
+          const aiResult = await simplifyClause(clause.originalText, clause.clauseTitle);
+
+          const riskResult = computeRiskLevel(
+            clause.originalText,
+            aiResult.aiRiskLevel,
+            aiResult.aiRiskReason
+          );
+
+          return {
+            documentId: document._id,
+            clauseTitle: clause.clauseTitle,
+            originalText: clause.originalText,
+            simplifiedText: aiResult.summary,
+            aiRiskLevel: aiResult.aiRiskLevel,
+            aiRiskReason: aiResult.aiRiskReason,
+            keywordRiskLevel: riskResult.keywordRiskLevel,
+            triggeredKeywords: riskResult.triggeredKeywords,
+            finalRiskLevel: riskResult.finalRiskLevel,
+            finalRiskReason: riskResult.finalRiskReason,
+            order: clause.order,
+            charStart: clause.charStart,
+            charEnd: clause.charEnd,
+          };
+        })
+      );
+
+      const inserted = await Clause.insertMany(processedBatch);
+      savedClauses.push(...inserted);
+    }
+
+    const riskScore = calculateOverallRiskScore(savedClauses);
+
+    document.status = 'ready';
+    document.riskScore = riskScore;
+    document.processedAt = new Date();
     await document.save();
 
-    return res.json({
-      message: 'Clause detection completed successfully',
-      document: {
-        id: document._id,
-        status: document.status,
-        clauseCount: clauseDocs.length,
-      },
-      clauses: clauseDocs,
+    return res.status(200).json({
+      message: 'Document analysed successfully.',
+      documentId: document._id,
+      status: document.status,
+      riskScore: document.riskScore,
+      clausesCount: savedClauses.length,
     });
   } catch (error) {
+    try {
+      await Document.findByIdAndUpdate(req.params.id, { status: 'error' });
+    } catch (_) {}
+
     next(error);
   }
 };
