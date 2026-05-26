@@ -6,6 +6,9 @@ const { extractAndValidate } = require('../services/pdf.service');
 const { detectClauses } = require('../services/clauseDetector.service');
 const { simplifyClause } = require('../services/groq.service');
 const { computeRiskLevel } = require('../services/riskEngine.service');
+const { splitDocumentText } = require('../utils/chunkText');
+const { embedText } = require('../services/gemini.service');
+const { upsertChunks } = require('../services/chromadb.service');
 
 const streamToBuffer = (stream) => {
   return new Promise((resolve, reject) => {
@@ -223,6 +226,21 @@ const analyseDocument = async (req, res, next) => {
     }
 
     const riskScore = calculateOverallRiskScore(savedClauses);
+
+    const fullText = document.extractedText;
+    if (!fullText || !fullText.trim()) {
+      throw new Error("Document extractedText missing for embeddings");
+    }
+
+    const chunks = await splitDocumentText(fullText);
+    const embeddings = [];
+
+    for (const chunk of chunks) {
+      const vector = await embedText(chunk.content);
+      embeddings.push(vector);
+    }
+
+    await upsertChunks(document._id.toString(), chunks, embeddings);
 
     document.status = 'ready';
     document.riskScore = riskScore;
