@@ -5,6 +5,7 @@ const { protect } = require('../middleware/protect');
 const { handleValidationErrors: validate } = require('../middleware/validate');
 const {
   uploadDocument,
+  getDocument,
   getDocumentFile,
   analyseDocument,
 } = require('../controllers/documentController');
@@ -13,6 +14,15 @@ const router = express.Router();
 
 // Upload document
 router.post('/upload', protect, upload.single('file'), uploadDocument);
+
+// Get document details/status
+router.get(
+  '/:id',
+  protect,
+  [param('id').isMongoId().withMessage('Valid document id is required')],
+  validate,
+  getDocument
+);
 
 // Get document file
 router.get(

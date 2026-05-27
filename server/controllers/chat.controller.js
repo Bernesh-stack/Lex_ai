@@ -56,6 +56,7 @@ async function postChatMessage(req, res, next) {
 
     return res.status(200).json({
       message: "Chat answer generated",
+      reply: assistantMessage.content,
       data: {
         userMessage,
         assistantMessage,
@@ -91,6 +92,7 @@ async function getChatHistory(req, res, next) {
 
     return res.status(200).json({
       message: "Chat history fetched",
+      messages,
       data: messages,
     });
   } catch (error) {

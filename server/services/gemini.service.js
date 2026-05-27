@@ -13,7 +13,7 @@ async function embedText(text) {
   }
 
   const model = genAI.getGenerativeModel({
-    model: "text-embedding-004",
+    model: "gemini-embedding-2",
   });
 
   const result = await model.embedContent({
@@ -33,7 +33,7 @@ async function embedQuery(text) {
   }
 
   const model = genAI.getGenerativeModel({
-    model: "text-embedding-004",
+    model: "gemini-embedding-2",
   });
 
   const result = await model.embedContent({

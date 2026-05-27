@@ -6,8 +6,8 @@ const {
   getChatHistory,
   clearChatHistory,
 } = require("../controllers/chat.controller");
-const protect = require("../middleware/protect");
-const validate = require("../middleware/validate");
+const { protect } = require("../middleware/authMiddleware");
+const { validate } = require("../middleware/validate");
 
 const router = express.Router();
 

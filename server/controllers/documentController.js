@@ -102,6 +102,44 @@ const uploadDocument = async (req, res, next) => {
   }
 };
 
+const getDocument = async (req, res, next) => {
+  try {
+    const document = await Document.findOne({
+      _id: req.params.id,
+      userId: req.user.id,
+    });
+
+    if (!document) {
+      return res.status(404).json({ message: 'Document not found' });
+    }
+
+    const clauses = await Clause.find({ documentId: document._id }).sort({ order: 1 });
+
+    const mappedClauses = clauses.map(c => {
+      const obj = c.toObject();
+      return {
+        ...obj,
+        id: obj._id,
+        summary: obj.simplifiedText, // alias for E2E tests
+      };
+    });
+
+    return res.status(200).json({
+      id: document._id,
+      _id: document._id,
+      fileName: document.fileName,
+      fileSize: document.fileSize,
+      status: document.status,
+      pageCount: document.pageCount,
+      riskScore: document.riskScore,
+      createdAt: document.createdAt,
+      clauses: mappedClauses,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getDocumentFile = async (req, res, next) => {
   try {
     const document = await Document.findOne({
@@ -265,6 +303,7 @@ const analyseDocument = async (req, res, next) => {
 
 module.exports = {
   uploadDocument,
+  getDocument,
   getDocumentFile,
   analyseDocument,
 };
