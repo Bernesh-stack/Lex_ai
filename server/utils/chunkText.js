@@ -1,5 +1,5 @@
 // server/utils/chunkText.js
-const { RecursiveCharacterTextSplitter } = require("langchain/text_splitter");
+const { RecursiveCharacterTextSplitter } = require("@langchain/textsplitters");
 
 async function splitDocumentText(fullText) {
   const splitter = new RecursiveCharacterTextSplitter({
