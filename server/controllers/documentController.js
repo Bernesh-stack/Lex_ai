@@ -8,7 +8,7 @@ const { simplifyClause } = require('../services/groq.service');
 const { computeRiskLevel } = require('../services/riskEngine.service');
 const { splitDocumentText } = require('../utils/chunkText');
 const { embedText } = require('../services/gemini.service');
-const { upsertChunks } = require('../services/chromadb.service');
+const { upsertChunks, deleteDocCollection } = require('../services/chromadb.service');
 
 const streamToBuffer = (stream) => {
   return new Promise((resolve, reject) => {
@@ -232,15 +232,19 @@ const analyseDocument = async (req, res, next) => {
       throw new Error("Document extractedText missing for embeddings");
     }
 
-    const chunks = await splitDocumentText(fullText);
-    const embeddings = [];
+    try {
+      const chunks = await splitDocumentText(fullText);
+      const embeddings = [];
 
-    for (const chunk of chunks) {
-      const vector = await embedText(chunk.content);
-      embeddings.push(vector);
+      for (const chunk of chunks) {
+        const vector = await embedText(chunk.content);
+        embeddings.push(vector);
+      }
+
+      await upsertChunks(document._id.toString(), chunks, embeddings);
+    } catch (embError) {
+      console.warn("ChromaDB/Embedding failed, skipping vector storage:", embError.message);
     }
-
-    await upsertChunks(document._id.toString(), chunks, embeddings);
 
     document.status = 'ready';
     document.riskScore = riskScore;
@@ -255,6 +259,7 @@ const analyseDocument = async (req, res, next) => {
       clausesCount: savedClauses.length,
     });
   } catch (error) {
+    console.error("[analyseDocument Error]:", error);
     try {
       await Document.findByIdAndUpdate(req.params.id, { status: 'error' });
     } catch (_) {}
@@ -263,8 +268,74 @@ const analyseDocument = async (req, res, next) => {
   }
 };
 
+const getDocuments = async (req, res, next) => {
+  try {
+    const documents = await Document.find({ userId: req.user.id })
+      .sort({ createdAt: -1 })
+      .select('-extractedText');
+
+    return res.status(200).json(documents);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getDocumentStatus = async (req, res, next) => {
+  try {
+    const document = await Document.findOne({
+      _id: req.params.id,
+      userId: req.user.id,
+    }).select('status riskScore');
+
+    if (!document) {
+      return res.status(404).json({ message: 'Document not found' });
+    }
+
+    return res.status(200).json(document);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteDocument = async (req, res, next) => {
+  try {
+    const document = await Document.findOne({
+      _id: req.params.id,
+      userId: req.user.id,
+    });
+
+    if (!document) {
+      return res.status(404).json({ message: 'Document not found' });
+    }
+
+    try {
+      const bucket = getGridFSBucket();
+      await bucket.delete(document.gridfsId);
+    } catch (err) {
+      console.warn("Could not delete from GridFS", err);
+    }
+
+    await Clause.deleteMany({ documentId: document._id });
+    
+    try {
+      await deleteDocCollection(document._id);
+    } catch (err) {
+      console.warn("Could not delete from ChromaDB", err);
+    }
+
+    await Document.deleteOne({ _id: document._id });
+
+    return res.status(200).json({ message: 'Document deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   uploadDocument,
   getDocumentFile,
   analyseDocument,
+  getDocuments,
+  getDocumentStatus,
+  deleteDocument,
 };

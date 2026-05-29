@@ -7,6 +7,9 @@ const {
   uploadDocument,
   getDocumentFile,
   analyseDocument,
+  getDocuments,
+  getDocumentStatus,
+  deleteDocument,
 } = require('../controllers/documentController');
 
 const router = express.Router();
@@ -30,6 +33,27 @@ router.post(
   [param('id').isMongoId().withMessage('Valid document id is required')],
   validate,
   analyseDocument
+);
+
+// Get all documents
+router.get('/', protect, getDocuments);
+
+// Get document status
+router.get(
+  '/:id/status',
+  protect,
+  [param('id').isMongoId().withMessage('Valid document id is required')],
+  validate,
+  getDocumentStatus
+);
+
+// Delete document
+router.delete(
+  '/:id',
+  protect,
+  [param('id').isMongoId().withMessage('Valid document id is required')],
+  validate,
+  deleteDocument
 );
 
 module.exports = router;
