@@ -15,9 +15,11 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.3.0",
     "lucide-react": "^1.17.0",
+    "pdfjs-dist": "^5.7.284",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-dropzone": "^15.0.0",
+    "react-pdf": "^10.4.1",
     "react-router-dom": "^7.15.1",
     "tailwind-merge": "^3.6.0",
     "zustand": "^5.0.14"

@@ -105,7 +105,7 @@ const detectClauses = (rawText = '') => {
       continue;
     }
 
-    if (paragraphBreak && currentTextLines.length > 0) {
+    if (paragraphBreak && currentTextLines.length > 0 && !currentTitle) {
       pushClause();
       currentTitle = '';
       currentTextLines = [];

@@ -3,7 +3,7 @@ const { PDFParse } = require('pdf-parse');
 const SCANNED_THRESHOLD = 200;
 
 const normalizeText = (text = '') => {
-  return text.replace(/\s+/g, ' ').trim();
+  return text.replace(/[ \t]+/g, ' ').trim();
 };
 
 const extractAndValidate = async (buffer) => {

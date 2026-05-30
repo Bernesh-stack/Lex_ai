@@ -331,11 +331,34 @@ const deleteDocument = async (req, res, next) => {
   }
 };
 
+const getDocumentDetails = async (req, res, next) => {
+  try {
+    const document = await Document.findOne({
+      _id: req.params.id,
+      userId: req.user.id,
+    }).select('-extractedText');
+
+    if (!document) {
+      return res.status(404).json({ message: 'Document not found' });
+    }
+
+    const clauses = await Clause.find({ documentId: document._id }).sort({ order: 1 });
+
+    return res.status(200).json({
+      document,
+      clauses,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   uploadDocument,
   getDocumentFile,
   analyseDocument,
   getDocuments,
   getDocumentStatus,
+  getDocumentDetails,
   deleteDocument,
 };

@@ -9,6 +9,7 @@ const {
   analyseDocument,
   getDocuments,
   getDocumentStatus,
+  getDocumentDetails,
   deleteDocument,
 } = require('../controllers/documentController');
 
@@ -45,6 +46,15 @@ router.get(
   [param('id').isMongoId().withMessage('Valid document id is required')],
   validate,
   getDocumentStatus
+);
+
+// Get document details with clauses
+router.get(
+  '/:id',
+  protect,
+  [param('id').isMongoId().withMessage('Valid document id is required')],
+  validate,
+  getDocumentDetails
 );
 
 // Delete document
