@@ -31,20 +31,24 @@ async function answerQuestionFromDocument({ docId, question, topK = 5 }) {
 
   const systemPrompt = `
 You are LexAI, an AI legal document assistant.
-Answer ONLY from the provided document context.
-Do not use outside knowledge.
-If the answer is not clearly present in the context, say that the document does not clearly state it.
-Keep the answer concise, plain-English, and helpful.
+Your task is to answer the user's question based STRICTLY and ONLY on the provided document context data.
+
+RULES:
+1. Do NOT use any outside knowledge. If the answer is not in the context, output exactly: "The document does not clearly state it."
+2. Do NOT repeat or regurgitate the context verbatim. Formulate a direct, human-readable answer.
+3. Keep the answer concise, plain-English, and helpful.
+4. Do NOT generate new questions or simulate a conversation.
+5. Answer the question directly without any preamble.
 `.trim();
 
   const userPrompt = `
-DOCUMENT CONTEXT:
-${context}
+CONTEXT DATA:
+\`\`\`json
+${JSON.stringify({ chunks: retrievedChunks.map(c => c.content) })}
+\`\`\`
 
-QUESTION:
-${question}
-
-Return a helpful answer based only on the context above.
+USER QUESTION:
+${question.trim()}
 `.trim();
 
   const completion = await groq.chat.completions.create({

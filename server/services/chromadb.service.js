@@ -1,21 +1,17 @@
 // server/services/chromadb.service.js
-const { ChromaClient } = require("chromadb");
+const Chunk = require('../models/Chunk');
 
-const chroma = new ChromaClient({
-  path: process.env.CHROMA_URL || "http://localhost:8000",
-});
-
-async function getOrCreateDocCollection(docId) {
-  const collectionName = String(docId);
-
-  const collection = await chroma.getOrCreateCollection({
-    name: collectionName,
-    metadata: {
-      description: `LexAI vectors for document ${collectionName}`,
-    },
-  });
-
-  return collection;
+function cosineSimilarity(vecA, vecB) {
+  let dotProduct = 0;
+  let normA = 0;
+  let normB = 0;
+  for (let i = 0; i < vecA.length; i++) {
+    dotProduct += vecA[i] * vecB[i];
+    normA += vecA[i] * vecA[i];
+    normB += vecB[i] * vecB[i];
+  }
+  if (normA === 0 || normB === 0) return 0;
+  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
 async function upsertChunks(docId, chunks, embeddings) {
@@ -27,56 +23,52 @@ async function upsertChunks(docId, chunks, embeddings) {
     throw new Error("embeddings length must match chunks length");
   }
 
-  const collection = await getOrCreateDocCollection(docId);
-
-  const ids = chunks.map((chunk) => `${docId}_chunk_${chunk.chunkIndex}`);
-  const documents = chunks.map((chunk) => chunk.content);
-  const metadatas = chunks.map((chunk) => ({
-    docId: String(docId),
+  const chunkDocs = chunks.map((chunk, i) => ({
+    documentId: docId,
     chunkIndex: chunk.chunkIndex,
+    content: chunk.content,
+    embedding: embeddings[i],
     startChar: chunk.startChar ?? 0,
     endChar: chunk.endChar ?? 0,
   }));
 
-  await collection.upsert({
-    ids,
-    documents,
-    embeddings,
-    metadatas,
-  });
+  await Chunk.deleteMany({ documentId: docId });
+  await Chunk.insertMany(chunkDocs);
 
   return { inserted: chunks.length };
 }
 
 async function queryChunks(docId, queryEmbedding, topK = 5) {
-  const collection = await getOrCreateDocCollection(docId);
-
-  const results = await collection.query({
-    queryEmbeddings: [queryEmbedding],
-    nResults: topK,
+  const chunks = await Chunk.find({ documentId: docId });
+  
+  const scoredChunks = chunks.map(chunk => {
+    const score = cosineSimilarity(queryEmbedding, chunk.embedding);
+    return {
+      id: chunk._id.toString(),
+      content: chunk.content,
+      metadata: {
+        docId: String(docId),
+        chunkIndex: chunk.chunkIndex,
+        startChar: chunk.startChar,
+        endChar: chunk.endChar
+      },
+      score
+    };
   });
 
-  const ids = results.ids?.[0] || [];
-  const documents = results.documents?.[0] || [];
-  const metadatas = results.metadatas?.[0] || [];
-  const distances = results.distances?.[0] || [];
+  // Sort descending by similarity
+  scoredChunks.sort((a, b) => b.score - a.score);
 
-  return ids.map((id, i) => ({
-    id,
-    content: documents[i],
-    metadata: metadatas[i],
-    score: distances[i],
-  }));
+  return scoredChunks.slice(0, topK);
 }
 
 async function deleteDocCollection(docId) {
-  try {
-    await chroma.deleteCollection({ name: String(docId) });
-  } catch (error) {
-    if (!String(error.message || "").includes("does not exist")) {
-      throw error;
-    }
-  }
+  await Chunk.deleteMany({ documentId: docId });
+}
+
+// Dummy for compat
+async function getOrCreateDocCollection() {
+  return {};
 }
 
 module.exports = {

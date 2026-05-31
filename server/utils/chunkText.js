@@ -3,8 +3,8 @@ const { RecursiveCharacterTextSplitter } = require("@langchain/textsplitters");
 
 async function splitDocumentText(fullText) {
   const splitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 3200,
-    chunkOverlap: 600,
+    chunkSize: 1000,
+    chunkOverlap: 200,
     separators: ["\n\n", "\n", ". ", " ", ""],
   });
 

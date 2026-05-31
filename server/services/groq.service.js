@@ -5,17 +5,9 @@ const groq = new Groq({
 });
 
 const cleanJsonResponse = (content = '') => {
-  const trimmed = content.trim();
-
-  if (trimmed.startsWith('```')) {
-    return trimmed
-      .replace(/^```json\s*/i, '')
-      .replace(/^```\s*/i, '')
-      .replace(/\s*```$/i, '')
-      .trim();
-  }
-
-  return trimmed;
+  const match = content.match(/\{[\s\S]*\}/);
+  if (match) return match[0];
+  return '{}';
 };
 
 const simplifyClause = async (clauseText = '', clauseTitle = 'Untitled Clause') => {
@@ -31,7 +23,8 @@ Return STRICT JSON only with this exact shape:
 
 Rules:
 - Be precise and simple.
-- Do not add markdown.
+- Output ONLY a JSON object. No preamble, no explanation, no original text.
+- Do not add markdown or backticks.
 - Do not add extra keys.
 - If the clause creates strong liability, penalties, termination rights, indemnity, lawsuit, arbitration, damages, or severe restrictions, mark high.
 - If the clause creates obligations, renewal terms, confidentiality, payment timing, or restrictions, mark medium.
@@ -47,11 +40,10 @@ ${clauseText}
   const completion = await groq.chat.completions.create({
     model: 'llama-3.3-70b-versatile',
     temperature: 0.1,
-    response_format: { type: 'json_object' },
     messages: [
       {
         role: 'system',
-        content: 'You are a legal simplification assistant. Output valid JSON only.',
+        content: 'You are a legal simplification assistant. You must respond with ONLY raw, valid JSON. Never include the original text or any explanations.',
       },
       {
         role: 'user',

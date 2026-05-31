@@ -58,9 +58,9 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/upload" element={<UploadPage />} />
           <Route path="/document/:id" element={<DocumentPage />} />
-          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/chat/:id" element={<ChatPage />} />
           <Route path="/compare" element={<ComparePage />} />
-          <Route path="/reports" element={<ReportPage />} />
+          <Route path="/reports/:id" element={<ReportPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/share" element={<SharePage />} />
         </Route>
