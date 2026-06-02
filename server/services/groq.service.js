@@ -16,6 +16,7 @@ You are analysing a legal contract clause.
 
 Return STRICT JSON only with this exact shape:
 {
+  "title": "A short 2-5 word descriptive title for this clause",
   "summary": "plain english summary in 2-4 sentences",
   "aiRiskLevel": "low | medium | high",
   "aiRiskReason": "1-2 sentence reason"
@@ -56,6 +57,7 @@ ${clauseText}
   const parsed = JSON.parse(cleanJsonResponse(content));
 
   return {
+    title: parsed.title?.trim() || clauseTitle,
     summary: parsed.summary?.trim() || 'Summary unavailable.',
     aiRiskLevel: ['low', 'medium', 'high'].includes(parsed.aiRiskLevel)
       ? parsed.aiRiskLevel

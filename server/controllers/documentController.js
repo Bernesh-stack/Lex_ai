@@ -205,7 +205,7 @@ const analyseDocument = async (req, res, next) => {
 
           return {
             documentId: document._id,
-            clauseTitle: clause.clauseTitle,
+            clauseTitle: aiResult.title,
             originalText: clause.originalText,
             simplifiedText: aiResult.summary,
             aiRiskLevel: aiResult.aiRiskLevel,

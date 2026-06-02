@@ -26,7 +26,8 @@ const isTitleCaseHeading = (line) => {
   if (words.length > 8) return false;
 
   const titleCaseWords = words.filter((word) => /^[A-Z][a-zA-Z'-]*$/.test(word));
-  return titleCaseWords.length >= Math.max(2, Math.ceil(words.length * 0.6));
+  const minRequired = words.length === 1 ? 1 : Math.max(2, Math.ceil(words.length * 0.6));
+  return titleCaseWords.length >= minRequired;
 };
 
 const isHeadingLine = (line) => {
