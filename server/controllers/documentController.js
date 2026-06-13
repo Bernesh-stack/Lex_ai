@@ -9,6 +9,7 @@ const { computeRiskLevel } = require('../services/riskEngine.service');
 const { splitDocumentText } = require('../utils/chunkText');
 const { embedText } = require('../services/gemini.service');
 const { upsertChunks, deleteDocCollection } = require('../services/chromadb.service');
+const { createShareToken, getExpiryDate } = require('../services/share.service');
 
 const streamToBuffer = (stream) => {
   return new Promise((resolve, reject) => {
@@ -353,6 +354,27 @@ const getDocumentDetails = async (req, res, next) => {
   }
 };
 
+const createShareLink = async (req, res, next) => {
+  try {
+    const doc = await Document.findOne({ _id: req.params.id, userId: req.user.id });
+    if (!doc) {
+      return res.status(404).json({ message: 'Document not found' });
+    }
+
+    doc.shareToken = createShareToken();
+    doc.shareExpiry = getExpiryDate(7);
+    await doc.save();
+
+    return res.json({
+      shareUrl: `${process.env.CLIENT_URL || 'http://localhost:5173'}/share/${doc.shareToken}`,
+      shareToken: doc.shareToken,
+      shareExpiry: doc.shareExpiry,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   uploadDocument,
   getDocumentFile,
@@ -361,4 +383,5 @@ module.exports = {
   getDocumentStatus,
   getDocumentDetails,
   deleteDocument,
+  createShareLink,
 };

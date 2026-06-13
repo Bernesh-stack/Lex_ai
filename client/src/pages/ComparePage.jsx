@@ -18,8 +18,9 @@ export const ComparePage = () => {
     queryKey: ['documents'],
     queryFn: async () => {
       const res = await api.get('/documents');
-      return res.data.filter(d => d.status === 'ready');
-    }
+      return res.data;
+    },
+    select: (data) => data.filter(d => d.status === 'ready')
   });
 
   const handleCompare = async () => {

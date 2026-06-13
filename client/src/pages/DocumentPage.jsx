@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import api from '../api/axios';
 import { useAuthStore } from '../store/authStore';
 import { Document, Page, pdfjs } from 'react-pdf';
-import { AlertCircle, ArrowLeft, Bot, Download, Share2, FileText, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Bot, FileText, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import clsx from 'clsx';
@@ -157,32 +157,28 @@ export const DocumentPage = () => {
             {document.fileName}
           </h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button 
             onClick={() => navigate(`/chat/${id}`)}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-semibold hover:bg-indigo-100 transition-colors"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-semibold hover:bg-indigo-100 transition-colors"
+            title="Ask AI"
           >
-            <Bot className="w-4 h-4" /> Ask AI
+            <Bot className="w-4 h-4" /> <span className="hidden sm:inline">Ask AI</span>
           </button>
           <button 
             onClick={() => navigate(`/reports/${id}`)}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm"
+            title="Risk Report"
           >
-            Risk Report
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm">
-            <Download className="w-4 h-4" /> Export PDF
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800 transition-colors shadow-sm">
-            <Share2 className="w-4 h-4" /> Share
+            <FileText className="w-4 h-4 sm:hidden" /> <span className="hidden sm:inline">Risk Report</span>
           </button>
         </div>
       </header>
 
       {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
         {/* Left Panel: PDF Viewer (45%) */}
-        <div className="w-[45%] bg-slate-100/50 flex flex-col border-r border-slate-200 h-full relative overflow-hidden">
+        <div className="w-full md:w-[45%] bg-slate-100/50 flex flex-col border-b md:border-b-0 md:border-r border-slate-200 h-1/2 md:h-full relative overflow-hidden shrink-0">
           <div className="flex-1 overflow-auto flex justify-center p-6 bg-slate-200/40 custom-scrollbar">
             <Document
               file={pdfFile}
@@ -236,7 +232,7 @@ export const DocumentPage = () => {
         </div>
 
         {/* Right Panel: Analysis (55%) */}
-        <div className="w-[55%] bg-slate-50 p-8 overflow-y-auto h-full custom-scrollbar">
+        <div className="w-full md:w-[55%] bg-slate-50 p-4 sm:p-8 overflow-y-auto h-1/2 md:h-full custom-scrollbar">
           <div className="max-w-3xl mx-auto space-y-8 pb-20">
             
             {/* Overall Risk Score Card */}

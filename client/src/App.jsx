@@ -5,6 +5,7 @@ import { useAuthStore } from './store/authStore';
 // Routes Guarding
 import ProtectedRoute from './components/routes/ProtectedRoute';
 import PublicRoute from './components/routes/PublicRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -18,6 +19,7 @@ import ReportPage from './pages/ReportPage';
 import ComparePage from './pages/ComparePage';
 import ProfilePage from './pages/ProfilePage';
 import SharePage from './pages/SharePage';
+import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
   const { checkAuth, isLoading } = useAuthStore();
@@ -42,13 +44,17 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-      <Routes>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Routes>
         {/* Public Routes for guests only (will redirect to /dashboard if logged in) */}
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
         </Route>
+
+        {/* Public Share Page (No Login Required) */}
+        <Route path="/share/:token" element={<SharePage />} />
 
         {/* Landing Page is visible to all */}
         <Route path="/" element={<LandingPage />} />
@@ -62,13 +68,13 @@ function App() {
           <Route path="/compare" element={<ComparePage />} />
           <Route path="/reports/:id" element={<ReportPage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/share" element={<SharePage />} />
         </Route>
 
-        {/* Catch-all redirect to landing page */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* Catch-all Not Found Page */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 

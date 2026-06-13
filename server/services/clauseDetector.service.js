@@ -92,10 +92,6 @@ const detectClauses = (rawText = '') => {
     cursor += line.length + 1;
 
     const headingMatch = isHeadingLine(trimmed);
-    const hasEmptyLineBreak = trimmed === '' && nextLine.trim() !== '';
-    const hasPunctuationBreak = trimmed.match(/[.?!:;]$/) && nextLine.trim().match(/^[A-Z0-9]/) && currentTextLines.length > 0;
-    const paragraphBreak = hasEmptyLineBreak || hasPunctuationBreak;
-
     if (headingMatch) {
       if (currentTextLines.length > 0) {
         pushClause();
@@ -105,14 +101,6 @@ const detectClauses = (rawText = '') => {
       currentTitle = trimmed;
       currentStart = lineStart;
       currentTextLines.push(trimmed);
-      continue;
-    }
-
-    if (paragraphBreak && currentTextLines.length > 0) {
-      pushClause();
-      // Retain currentTitle so subsequent paragraphs in this section keep the heading context
-      currentTextLines = [];
-      currentStart = cursor;
       continue;
     }
 

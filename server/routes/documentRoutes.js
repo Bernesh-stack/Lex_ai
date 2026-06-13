@@ -11,6 +11,7 @@ const {
   getDocumentStatus,
   getDocumentDetails,
   deleteDocument,
+  createShareLink,
 } = require('../controllers/documentController');
 
 const router = express.Router();
@@ -64,6 +65,15 @@ router.delete(
   [param('id').isMongoId().withMessage('Valid document id is required')],
   validate,
   deleteDocument
+);
+
+// Create share link
+router.post(
+  '/:id/share',
+  protect,
+  [param('id').isMongoId().withMessage('Valid document id is required')],
+  validate,
+  createShareLink
 );
 
 module.exports = router;

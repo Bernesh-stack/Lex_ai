@@ -30,10 +30,13 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+const shareRoutes = require('./routes/share.routes');
+
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/share', shareRoutes);
 
 app.use(errorHandler);
 

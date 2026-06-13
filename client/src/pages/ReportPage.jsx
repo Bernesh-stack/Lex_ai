@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../api/axios';
-import { ArrowLeft, Download, Share2, AlertTriangle, ShieldCheck, HelpCircle, FileText, Bot, FileWarning } from 'lucide-react';
+import { ArrowLeft, Download, Share2, AlertTriangle, ShieldCheck, HelpCircle, FileText, Bot, FileWarning, Loader2, Check } from 'lucide-react';
 import clsx from 'clsx';
 
 export const ReportPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [isSharing, setIsSharing] = useState(false);
+  const [shareSuccess, setShareSuccess] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['document', id],
@@ -74,6 +76,21 @@ export const ReportPage = () => {
     window.print();
   };
 
+  const handleShare = async () => {
+    try {
+      setIsSharing(true);
+      const res = await api.post(`/documents/${id}/share`);
+      await navigator.clipboard.writeText(res.data.shareUrl);
+      setShareSuccess(true);
+      setTimeout(() => setShareSuccess(false), 3000);
+    } catch (error) {
+      console.error('Failed to generate share link', error);
+      alert('Failed to generate share link');
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       {/* Header - Excluded from print */}
@@ -87,21 +104,29 @@ export const ReportPage = () => {
             Risk Report
           </h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button 
             onClick={() => navigate(`/chat/${id}`)}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-semibold hover:bg-indigo-100 transition-colors"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-semibold hover:bg-indigo-100 transition-colors"
+            title="Ask AI"
           >
-            <Bot className="w-4 h-4" /> Ask AI
+            <Bot className="w-4 h-4" /> <span className="hidden sm:inline">Ask AI</span>
           </button>
           <button 
             onClick={handleExportPDF}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm"
+            title="Export PDF"
           >
-            <Download className="w-4 h-4" /> Export PDF
+            <Download className="w-4 h-4" /> <span className="hidden sm:inline">Export PDF</span>
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800 transition-colors shadow-sm">
-            <Share2 className="w-4 h-4" /> Share
+          <button 
+            onClick={handleShare}
+            disabled={isSharing}
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800 transition-colors shadow-sm disabled:opacity-70"
+            title="Share"
+          >
+            {isSharing ? <Loader2 className="w-4 h-4 animate-spin" /> : shareSuccess ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />} 
+            <span className="hidden sm:inline">{shareSuccess ? 'Link Copied!' : 'Share'}</span>
           </button>
         </div>
       </header>

@@ -134,8 +134,19 @@ export const ChatPage = () => {
         <div className="max-w-3xl mx-auto space-y-6">
           
           {isLoadingHistory ? (
-            <div className="flex items-center justify-center h-40 text-slate-400">
-              <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            <div className="flex flex-col gap-6 w-full animate-pulse">
+              <div className="flex gap-4 flex-row-reverse">
+                <div className="w-8 h-8 rounded-full bg-slate-200 shrink-0"></div>
+                <div className="w-64 h-12 bg-slate-200 rounded-2xl rounded-tr-sm"></div>
+              </div>
+              <div className="flex gap-4 flex-row">
+                <div className="w-8 h-8 rounded-full bg-slate-200 shrink-0"></div>
+                <div className="w-80 h-24 bg-slate-200 rounded-2xl rounded-tl-sm"></div>
+              </div>
+              <div className="flex gap-4 flex-row-reverse">
+                <div className="w-8 h-8 rounded-full bg-slate-200 shrink-0"></div>
+                <div className="w-48 h-12 bg-slate-200 rounded-2xl rounded-tr-sm"></div>
+              </div>
             </div>
           ) : messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center pt-16 pb-8">

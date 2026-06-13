@@ -34,9 +34,9 @@ export const DashboardPage = () => {
   // Calculate stats
   const totalDocuments = documents.length;
   const analysedDocuments = documents.filter(d => d.status === 'ready').length;
-  
+
   const analysedWithScores = documents.filter(d => d.status === 'ready' && d.riskScore);
-  const averageRiskScore = analysedWithScores.length 
+  const averageRiskScore = analysedWithScores.length
     ? (analysedWithScores.reduce((acc, curr) => acc + curr.riskScore, 0) / analysedWithScores.length).toFixed(1)
     : '-';
 
@@ -55,7 +55,7 @@ export const DashboardPage = () => {
 
       {/* Overlay for mobile sidebar */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-slate-900/50 z-40 lg:hidden backdrop-blur-sm"
           onClick={() => setSidebarOpen(false)}
         ></div>
@@ -73,16 +73,16 @@ export const DashboardPage = () => {
               <span className="text-primary-400">🏛️</span> LexAI
             </span>
           </div>
-          
+
           <nav className="space-y-1.5">
             <Link to="/dashboard" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg bg-primary-600 text-white transition-all">
               <FileText className="w-4 h-4" />
               Documents
             </Link>
-            {['Upload', 'Chat', 'Compare', 'Reports', 'Profile'].map((item) => (
-              <Link 
-                key={item} 
-                to={`/${item.toLowerCase()}`} 
+            {['Upload', 'Compare', 'Profile'].map((item) => (
+              <Link
+                key={item}
+                to={`/${item.toLowerCase()}`}
                 onClick={() => setSidebarOpen(false)}
                 className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all"
               >
@@ -103,7 +103,7 @@ export const DashboardPage = () => {
               <p className="text-xs text-slate-500 truncate">{user?.email}</p>
             </div>
           </div>
-          <button 
+          <button
             onClick={logout}
             className="w-full flex items-center justify-center gap-2.5 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-950/20 hover:text-red-300 rounded-lg transition-all"
           >
@@ -156,7 +156,7 @@ export const DashboardPage = () => {
           </div>
 
           <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col relative overflow-hidden sm:col-span-2 lg:col-span-1 w-full">
-             <div className="absolute top-0 right-0 p-4 opacity-10">
+            <div className="absolute top-0 right-0 p-4 opacity-10">
               <ShieldAlert className="w-16 h-16 text-rose-500" />
             </div>
             <p className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Average Risk Score</p>
@@ -170,8 +170,30 @@ export const DashboardPage = () => {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
+          <div className="w-full">
+            <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+              <div className="w-32 h-6 bg-slate-200 rounded animate-pulse"></div>
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 w-full">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 shadow-sm flex flex-col h-[160px]">
+                  <div className="flex gap-3 sm:gap-4 mb-4 sm:mb-6 w-full">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-slate-100 shrink-0 animate-pulse"></div>
+                    <div className="flex-1 space-y-2 py-1">
+                      <div className="h-4 bg-slate-200 rounded w-3/4 animate-pulse"></div>
+                      <div className="h-3 bg-slate-100 rounded w-1/2 animate-pulse"></div>
+                    </div>
+                  </div>
+                  <div className="pt-4 sm:pt-5 border-t border-slate-50 flex items-center justify-between w-full mt-auto">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-100 shrink-0 animate-pulse"></div>
+                      <div className="w-16 h-3 bg-slate-100 rounded animate-pulse"></div>
+                    </div>
+                    <div className="w-16 h-5 bg-slate-100 rounded-md animate-pulse"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : documents.length === 0 ? (
           <div className="bg-white rounded-3xl border border-dashed border-slate-300 p-6 sm:p-12 text-center max-w-2xl mx-auto mt-6 sm:mt-12 flex flex-col items-center">
@@ -182,7 +204,7 @@ export const DashboardPage = () => {
             <p className="text-slate-500 text-sm max-w-sm mb-6 sm:mb-8">
               Start analyzing your legal documents for risks, unusual clauses, and plain-english summaries.
             </p>
-            <Link 
+            <Link
               to="/upload"
               className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-primary-600 hover:bg-primary-500 text-white font-semibold rounded-xl text-sm transition-all shadow-md shadow-primary-500/20"
             >
@@ -195,7 +217,7 @@ export const DashboardPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 w-full">
               {documents.map((doc) => (
                 <div key={doc._id} className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col relative group overflow-hidden">
-                  <button 
+                  <button
                     onClick={(e) => { e.preventDefault(); setDeleteId(doc._id); }}
                     className="absolute top-3 right-3 sm:top-4 sm:right-4 p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg opacity-100 lg:opacity-0 group-hover:opacity-100 transition-all z-10"
                     title="Delete document"
@@ -203,7 +225,7 @@ export const DashboardPage = () => {
                     <Trash2 className="w-4 h-4" />
                   </button>
 
-                  <div 
+                  <div
                     className="flex-1 cursor-pointer w-full"
                     onClick={() => doc.status === 'ready' && navigate(`/document/${doc._id}`)}
                   >
@@ -219,7 +241,7 @@ export const DashboardPage = () => {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="pt-4 sm:pt-5 border-t border-slate-100 flex items-center justify-between w-full">
                       <div className="flex items-center gap-2 sm:gap-3">
                         {doc.status === 'ready' ? (
@@ -243,9 +265,9 @@ export const DashboardPage = () => {
                             <div className="text-[10px] sm:text-sm font-medium text-slate-600 truncate">Risk Score</div>
                           </>
                         ) : doc.status === 'scanned' ? (
-                           <div className="text-[10px] sm:text-sm font-medium text-rose-500 flex items-center gap-1.5 truncate">
+                          <div className="text-[10px] sm:text-sm font-medium text-rose-500 flex items-center gap-1.5 truncate">
                             <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" /> Scanned
-                           </div>
+                          </div>
                         ) : (
                           <div className="text-[10px] sm:text-sm font-medium text-slate-500 flex items-center gap-1.5 sm:gap-2 truncate">
                             <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-slate-200 border-t-slate-500 rounded-full animate-spin shrink-0"></div>
@@ -253,12 +275,11 @@ export const DashboardPage = () => {
                           </div>
                         )}
                       </div>
-                      
-                      <div className={`text-[10px] sm:text-xs font-semibold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md shrink-0 ${
-                        doc.status === 'ready' ? 'bg-emerald-100 text-emerald-700' : 
-                        doc.status === 'scanned' || doc.status === 'error' ? 'bg-rose-100 text-rose-700' : 
-                        'bg-amber-100 text-amber-700'
-                      }`}>
+
+                      <div className={`text-[10px] sm:text-xs font-semibold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md shrink-0 ${doc.status === 'ready' ? 'bg-emerald-100 text-emerald-700' :
+                          doc.status === 'scanned' || doc.status === 'error' ? 'bg-rose-100 text-rose-700' :
+                            'bg-amber-100 text-amber-700'
+                        }`}>
                         {doc.status.charAt(0).toUpperCase() + doc.status.slice(1)}
                       </div>
                     </div>
@@ -282,14 +303,14 @@ export const DashboardPage = () => {
               Are you sure you want to delete this document? This action cannot be undone and all associated AI insights will be lost.
             </p>
             <div className="flex gap-3 justify-end">
-              <button 
+              <button
                 onClick={() => setDeleteId(null)}
                 className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
                 disabled={deleteMutation.isPending}
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={() => deleteMutation.mutate(deleteId)}
                 className="px-4 py-2 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors flex items-center gap-2"
                 disabled={deleteMutation.isPending}
