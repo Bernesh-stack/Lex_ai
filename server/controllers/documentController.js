@@ -366,7 +366,7 @@ const createShareLink = async (req, res, next) => {
     await doc.save();
 
     return res.json({
-      shareUrl: `${process.env.CLIENT_URL || 'http://localhost:5173'}/share/${doc.shareToken}`,
+      shareUrl: `${process.env.CLIENT_URL}/share/${doc.shareToken}`,
       shareToken: doc.shareToken,
       shareExpiry: doc.shareExpiry,
     });
