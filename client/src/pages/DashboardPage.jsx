@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
+import { Footer } from '../components/Footer';
 
 export const DashboardPage = () => {
   const { user, logout } = useAuthStore();
@@ -289,6 +290,11 @@ export const DashboardPage = () => {
             </div>
           </div>
         )}
+        
+        {/* Footer */}
+        <div className="mt-12">
+          <Footer />
+        </div>
       </main>
 
       {/* Delete Confirmation Modal */}

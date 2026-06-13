@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
-import { Mail, Lock, User, Eye, EyeOff, Sparkles } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, Sparkles, Github, Linkedin } from 'lucide-react';
 
 export const AuthCard = ({ mode }) => {
   const navigate = useNavigate();
@@ -327,9 +327,20 @@ export const AuthCard = ({ mode }) => {
         </div>
 
         {/* Footer */}
-        <div>
-          <p className="text-xs font-medium tracking-wide text-slate-300">
-            &copy; 2026 LexAI. The Cognitive Architect.
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-4 text-sm font-medium">
+            <span className="text-white">Built by <strong>Bernesh</strong></span>
+            <a href="https://github.com/Bernesh-stack" target="_blank" rel="noreferrer" className="text-slate-300 hover:text-white flex items-center gap-1.5 transition-colors">
+              <Github className="w-4 h-4" />
+              GitHub
+            </a>
+            <a href="https://www.linkedin.com/in/bernesh/" target="_blank" rel="noreferrer" className="text-slate-300 hover:text-white flex items-center gap-1.5 transition-colors">
+              <Linkedin className="w-4 h-4" />
+              LinkedIn
+            </a>
+          </div>
+          <p className="text-xs font-medium tracking-wide text-slate-400">
+            &copy; {new Date().getFullYear()} LexAI. The Cognitive Architect.
           </p>
         </div>
       </div>
